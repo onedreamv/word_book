@@ -18,6 +18,7 @@ class word_book_manager:
         self.main_book_path = main_book_path
 
     def add(self,word : str,):
+
         with open(self.main_book_path, "r",encoding="utf-8",) as f:
             existing : set[str] = {line.strip() for line in f if line.strip()}
             #读取文件内容，去除空行，并将单词存储在一个集合中
@@ -28,6 +29,22 @@ class word_book_manager:
                 f.write(word + "\n")
             print(f"{word} 已经添加到词书里了.")
 
+    def merge(self,other_book_path : Path,):
+
+        with open(self.main_book_path, "r",encoding="utf-8",) as f:
+            existing : set[str] = {line.strip() for line in f if line.strip()}
+        with open(other_book_path, "r",encoding="utf-8",) as f:
+            other_words : set[str] = {line.strip() for line in f if line.strip()}
+        new_words = other_words - existing
+        if new_words:
+            with open(self.main_book_path, "a",encoding="utf-8",) as f:
+                for word in new_words:
+                    f.write('\n'.join([word,]))
+            print(f"已合并 {len(new_words)} 个新单词.")
+        else:
+            print("没有新单词需要合并.")
+
+            
 
 
 
