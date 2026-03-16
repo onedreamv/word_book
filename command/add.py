@@ -16,7 +16,7 @@ def add(
     """添加单词到词书"""
     if not book_path:
         config: AppConfig = ctx.obj
-        book_path = config.toml_config["word_book"]["path"]
+        book_path = config.toml_config["settings"]["main_book_path"]
 
     with open(book_path, "r", encoding="utf-8") as f:
         existing: set[str] = {line.strip() for line in f if line.strip()}
