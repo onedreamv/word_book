@@ -1,3 +1,4 @@
+import rich
 import typer
 from pathlib import Path
 import textwrap
@@ -29,19 +30,19 @@ def init():
     # 检查是否已存在配置目录
     if config_dir.exists():
         return f"提示: {config_dir} 已经存在，无需初始化。"
-
+    
     try:
         # 创建目录
         config_dir.mkdir(parents=True, exist_ok=True)
-        yield f"已创建目录: {config_dir}"
+        rich.print(f"已创建目录: {config_dir}")
         # 写入文件
         toml_file.write_text(DEFAULT_TOML, encoding="utf-8")
-        yield f"已生成文件: {toml_file.name}"
+        rich.print(f"已生成文件: {toml_file.name}")
         env_file.write_text(DEFAULT_ENV, encoding="utf-8")
-        yield f"已生成文件: {env_file.name}"
+        rich.print(f"已生成文件: {env_file.name}")
         # 反馈成功
-        yield "✨ 初始化成功!"
+        rich.print("✨ 初始化成功!")
         
     except Exception as e:
-        yield f"❌ 初始化失败: {e}"
+        rich.print(f"❌ 初始化失败: {e}")
         raise typer.Exit(code=1)
