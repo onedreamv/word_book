@@ -20,7 +20,7 @@ DEFAULT_ENV = textwrap.dedent("""
 
 
 @app.command()
-def init():
+def init() -> str | None:
     """初始化项目：创建 .bookconfig 目录及默认配置文件。"""
     cwd = Path.cwd()
     config_dir = cwd / ".bookconfig"
@@ -36,9 +36,9 @@ def init():
         config_dir.mkdir(parents=True, exist_ok=True)
         rich.print(f"已创建目录: {config_dir}")
         # 写入文件
-        toml_file.write_text(DEFAULT_TOML, encoding="utf-8")
+        toml_file.write_text(DEFAULT_TOML, encoding="utf-8")  # pyright: ignore[reportUnusedCallResult]
         rich.print(f"已生成文件: {toml_file.name}")
-        env_file.write_text(DEFAULT_ENV, encoding="utf-8")
+        env_file.write_text(DEFAULT_ENV, encoding="utf-8")  # pyright: ignore[reportUnusedCallResult]
         rich.print(f"已生成文件: {env_file.name}")
         # 反馈成功
         rich.print("✨ 初始化成功!")

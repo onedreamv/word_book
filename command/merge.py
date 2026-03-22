@@ -1,4 +1,5 @@
-from typing import Annotated
+from ..core.config import AppConfig
+from typing import Annotated, cast
 import typer
 from pathlib import Path
 import rich
@@ -9,11 +10,11 @@ app = typer.Typer()
 def merge(
     ctx: typer.Context,
     other_book_path: Annotated[Path, typer.Argument(help="要合并的词书路径")], 
-    main_book_path: Annotated[Path, typer.Option("--file","-f", help="主词书路径")]
+    main_book_path: Annotated[Path | None, typer.Option("--file","-f", help="主词书路径")] = None
     ):
     """合并其他词书到主词书"""
     if not main_book_path:
-        config: AppConfig = ctx.obj
+        config = cast(AppConfig, ctx.obj)
         main_book_path = Path(config.toml_config["settings"]["main_book_path"])
     
     with open(main_book_path, "r", encoding="utf-8") as f:

@@ -1,25 +1,15 @@
-from dataclasses import dataclass
-# from typing import Annotated
 from pathlib import Path
-from typing import Any
 import typer
 import rich
 from dotenv import dotenv_values
 import tomllib
-from .core.config import get_config_dir,NotFoundConfigDirError
+from .core.config import get_config_dir, NotFoundConfigDirError, AppConfig
 from .command import app as command_app
 
 app : typer.Typer = typer.Typer()
 
 # 注册命令
 app.add_typer(command_app, name=None)
-
-# 定义一个数据类，用于存储配置信息
-@dataclass
-class AppConfig:
-    working_dir: Path
-    toml_config: dict[str,Any]
-    env_config: dict[str, str|None]
 
 # typer主回调
 @app.callback()
@@ -50,6 +40,12 @@ def main_callback(ctx: typer.Context):
     except Exception as e:
         rich.print(f"读取配置文件失败: {e}")
         raise typer.Exit(code=1)
+
+    # 检查默认词书是否存在,如果不存在则创建
+    default_book_path = Path(ctx.obj.toml_config["settings"]["main_book_path"])
+    if not default_book_path.exists():
+        default_book_path.touch()
+        rich.print(f"提示: 默认词书 {default_book_path} 不存在，已自动创建。")
     
 
 

@@ -1,4 +1,13 @@
 from pathlib import Path
+from dataclasses import dataclass
+from typing import Any
+
+# 定义数据类，用于存储配置信息
+@dataclass
+class AppConfig:
+    working_dir: Path
+    toml_config: dict[str, Any]
+    env_config: dict[str, str | None]
 
 # 定义找不到配置目录的异常
 class NotFoundConfigDirError(Exception):
