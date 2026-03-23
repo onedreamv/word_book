@@ -1,12 +1,16 @@
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Any
 
 # 定义数据类，用于存储配置信息
-@dataclass
+# toml文件未来可能添加多种数值类型,嵌套dataclass以便安全处理数值类型,并且利好IDE类型注解
+@dataclass(frozen=True)
+class Settings:
+    main_book_path: str
+
+@dataclass(frozen=True)
 class AppConfig:
     working_dir: Path
-    toml_config: dict[str, Any]
+    toml_config: Settings
     env_config: dict[str, str | None]
 
 # 定义找不到配置目录的异常

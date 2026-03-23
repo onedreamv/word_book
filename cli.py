@@ -1,9 +1,10 @@
 from pathlib import Path
+from typing import cast
 import typer
 import rich
 from dotenv import dotenv_values
 import tomllib
-from .core.config import get_config_dir, NotFoundConfigDirError, AppConfig
+from .core.config import get_config_dir, NotFoundConfigDirError, AppConfig, Settings
 from .command import app as command_app
 
 app : typer.Typer = typer.Typer()
@@ -29,12 +30,14 @@ def main_callback(ctx: typer.Context):
     #配置文件存在,读取配置
     try:
         with open(toml_path, "rb") as f:
-            toml_config = tomllib.load(f)
+            toml_config= tomllib.load(f)
             env_config = dotenv_values(env_path)
         # 存储配置到上下文
+        settings_obj: Settings =  Settings(**toml_config["settings"])  # pyright: ignore[reportAny]
+
         ctx.obj = AppConfig(
         working_dir=config_dir,
-        toml_config=toml_config,
+        toml_config=settings_obj,
         env_config=env_config
         )
     except Exception as e:
@@ -42,7 +45,8 @@ def main_callback(ctx: typer.Context):
         raise typer.Exit(code=1)
 
     # 检查默认词书是否存在,如果不存在则创建
-    default_book_path = Path(ctx.obj.toml_config["settings"]["main_book_path"])
+    config: AppConfig = cast(AppConfig, ctx.obj)
+    default_book_path: Path = Path(config.toml_config.main_book_path)
     if not default_book_path.exists():
         default_book_path.touch()
         rich.print(f"提示: 默认词书 {default_book_path} 不存在，已自动创建。")
