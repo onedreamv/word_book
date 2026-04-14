@@ -36,7 +36,7 @@ def main_callback(ctx: typer.Context):
         settings_obj: Settings =  Settings(**toml_config["settings"])  # pyright: ignore[reportAny]
 
         ctx.obj = AppConfig(
-        working_dir=config_dir,
+        config_dir=config_dir,
         toml_config=settings_obj,
         env_config=env_config
         )
@@ -51,6 +51,9 @@ def main_callback(ctx: typer.Context):
         default_book_path.touch()
         rich.print(f"提示: 默认词书 {default_book_path} 不存在，已自动创建。")
     
+
+if __name__ == "__main__":
+    app()
 
 
 

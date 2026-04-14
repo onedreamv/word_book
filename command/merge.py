@@ -23,7 +23,7 @@ def merge(
     with open(other_book_path, "r", encoding="utf-8") as f:
         other_words: set[str] = {line.strip() for line in f if line.strip()}
     
-    new_words = other_words - existing
+    new_words: set[str] = other_words - existing
     
     if new_words:
         with open(main_book_path, "a", encoding="utf-8") as f:

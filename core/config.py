@@ -9,7 +9,7 @@ class Settings:
 
 @dataclass(frozen=True)
 class AppConfig:
-    working_dir: Path
+    config_dir: Path
     toml_config: Settings
     env_config: dict[str, str | None]
 
