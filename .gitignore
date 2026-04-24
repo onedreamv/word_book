@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# vscode
+.vscode/
+
 # other
 local_tmp_doc/
