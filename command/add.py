@@ -6,6 +6,7 @@ import typer
 
 from ..core.config import AppConfig
 from ..core.exceptions import abort
+from ..core.output_writer import append_lines_to_file
 
 app = typer.Typer()
 
@@ -46,10 +47,6 @@ def add(
         rich.print(f"[yellow]{word}[/yellow] 已经在词书里了.")
         return
 
-    try:
-        with book_path.open("a", encoding="utf-8") as file:
-            file.write(word + "\n")  # pyright: ignore[reportUnusedCallResult]
-    except OSError as exc:
-        abort(f"写入词书 `{book_path}` 失败: {exc}")
+    append_lines_to_file([word], book_path)
 
     rich.print(f"[green]{word}[/green] 已经添加到词书里了.")
