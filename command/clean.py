@@ -116,7 +116,7 @@ def clean(
     
     words: list[str] = extractor.extract(text)
     
-    output_path: Path = resolve_unique_path(Path.cwd(), "cleaned", ".txt")
+    output_path: Path = resolve_unique_path(config.working_dir, "cleaned", ".txt")
     _ = write_lines_to_file(words, output_path)  
     
     typer.echo(

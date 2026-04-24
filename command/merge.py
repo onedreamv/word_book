@@ -1,34 +1,53 @@
-from ..core.config import AppConfig
-from typing import Annotated, cast
-import typer
 from pathlib import Path
+from typing import Annotated, cast
+
 import rich
+import typer
+
+from ..core.config import AppConfig
+from ..core.exceptions import abort
 
 app = typer.Typer()
+
 
 @app.command()
 def merge(
     ctx: typer.Context,
-    other_book_path: Annotated[Path, typer.Argument(help="要合并的词书路径")], 
-    main_book_path: Annotated[Path | None, typer.Option(None, "--file","-f", help="主词书路径")] = None
-    ):
+    other_book_path: Annotated[Path, typer.Argument(help="要合并的词书路径")],
+    main_book_path: Annotated[Path | None, typer.Option(None, "--file", "-f", help="主词书路径")] = None,
+) -> None:
     """合并其他词书到主词书"""
-    if not main_book_path:
+    if main_book_path is None:
         config: AppConfig = cast(AppConfig, ctx.obj)
-        main_book_path = Path(config.toml_config.main_book_path)
+        main_book_path = config.main_book_path
 
-    with open(main_book_path, "r", encoding="utf-8") as f:
-        existing: set[str] = {line.strip() for line in f if line.strip()}
-    
-    with open(other_book_path, "r", encoding="utf-8") as f:
-        other_words: set[str] = {line.strip() for line in f if line.strip()}
-    
+    if not main_book_path.exists():
+        abort(f"主词书 `{main_book_path}` 不存在。")
+    if not main_book_path.is_file():
+        abort(f"主词书路径 `{main_book_path}` 不是文件。")
+    if not other_book_path.exists():
+        abort(f"待合并词书 `{other_book_path}` 不存在。")
+    if not other_book_path.is_file():
+        abort(f"待合并词书路径 `{other_book_path}` 不是文件。")
+
+    try:
+        with main_book_path.open("r", encoding="utf-8") as file:
+            existing: set[str] = {line.strip() for line in file if line.strip()}
+        with other_book_path.open("r", encoding="utf-8") as file:
+            other_words: set[str] = {line.strip() for line in file if line.strip()}
+    except OSError as exc:
+        abort(f"读取词书失败: {exc}")
+
     new_words: set[str] = other_words - existing
-    
+
     if new_words:
-        with open(main_book_path, "a", encoding="utf-8") as f:
-            for word in new_words:
-                f.write('\n' + word)  # pyright: ignore[reportUnusedCallResult]
+        try:
+            with main_book_path.open("a", encoding="utf-8") as file:
+                for word in new_words:
+                    file.write("\n" + word)  # pyright: ignore[reportUnusedCallResult]
+        except OSError as exc:
+            abort(f"写入主词书 `{main_book_path}` 失败: {exc}")
         rich.print(f"已合并 {len(new_words)} 个新单词.")
-    else:
-        rich.print("没有新单词需要合并.")
+        return
+
+    rich.print("没有新单词需要合并.")
