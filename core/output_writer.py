@@ -17,7 +17,7 @@ def resolve_unique_path(base_dir: Path, name: str, extension: str) -> Path:
 
 def write_lines_to_file(lines: Iterable[str], output_path: Path) -> Path:
     """将字符串列表按行写入文件"""
-    content = "\n".join(lines) + "\n"
+    content = "".join(f"{line}\n" for line in lines if line.strip())
     try:
         _ = output_path.write_text(content, encoding="utf-8")
     except OSError as exc:
@@ -27,7 +27,7 @@ def write_lines_to_file(lines: Iterable[str], output_path: Path) -> Path:
 
 def append_lines_to_file(lines: Iterable[str], output_path: Path) -> Path:
     """将字符串列表按行追加到文件"""
-    content = "".join(f"{line}\n" for line in lines)
+    content = "".join(f"{line}\n" for line in lines if line.strip())
     if not content:
         return output_path
         
