@@ -2,6 +2,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from .exceptions import abort
 
+import os
+
 def resolve_unique_path(base_dir: Path, name: str, extension: str) -> Path:
     """解决同名文件冲突，生成唯一的文件路径"""
     output_path = base_dir / f"{name}{extension}"
@@ -30,12 +32,21 @@ def append_lines_to_file(lines: Iterable[str], output_path: Path) -> Path:
     content = "".join(f"{line}\n" for line in lines if line.strip())
     if not content:
         return output_path
-        
+
     try:
-        with output_path.open("a", encoding="utf-8") as file:
-            _ = file.write(content)
+        needs_prefix_newline = False
+
+        if output_path.exists() and output_path.stat().st_size > 0:
+            with output_path.open("rb") as f:
+                _ = f.seek(-1, os.SEEK_END)
+                needs_prefix_newline = f.read(1) != b"\n"
+
+        with output_path.open("a", encoding="utf-8", newline="") as f:
+            if needs_prefix_newline:
+                _ = f.write("\n")
+            _ = f.write(content)
+
     except OSError as exc:
         abort(f"追加写入文件失败: {output_path} ({exc})")
 
     return output_path
-
