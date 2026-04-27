@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-wordbook = "cli:app"
+wordbook = "word_book.cli:app"
 
 
 [build-system]
