@@ -12,5 +12,10 @@ wheels/
 # vscode
 .vscode/
 
+# word-book self
+word_book.md
+.bookconfig/
+
+
 # other
 local_tmp_doc/
