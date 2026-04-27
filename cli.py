@@ -15,6 +15,9 @@ app.add_typer(command_app, name=None)
 # typer 主回调
 @app.callback()
 def main_callback(ctx: typer.Context) -> None:
+    if ctx.resilient_parsing:
+        return
+
     # 如果是初始化子命令，直接返回
     if ctx.invoked_subcommand == "init":
         return
@@ -36,6 +39,3 @@ def main_callback(ctx: typer.Context) -> None:
 
     rich.print(f"提示: 默认词书 {config.main_book_path} 不存在，已自动创建。")
 
-
-if __name__ == "__main__":
-    app()
