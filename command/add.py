@@ -18,7 +18,6 @@ def add(
     book_path: Annotated[
         Path | None,
         typer.Option(
-            None,
             "--file",
             "-f",
             help="词书路径",

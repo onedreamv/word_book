@@ -15,7 +15,7 @@ app = typer.Typer()
 def merge(
     ctx: typer.Context,
     other_book_path: Annotated[Path, typer.Argument(help="要合并的词书路径")],
-    main_book_path: Annotated[Path | None, typer.Option(None, "--file", "-f", help="主词书路径")] = None,
+    main_book_path: Annotated[Path | None, typer.Option("--file", "-f", help="主词书路径")] = None,
 ) -> None:
     """合并其他词书到主词书"""
     if main_book_path is None:
