@@ -11,3 +11,11 @@ dependencies = [
     "rich>=14.1.0",
     "typer>=0.24.1",
 ]
+
+[project.scripts]
+wordbook = "cli:app"
+
+
+[build-system]
+requires = ["uv_build>=0.8.14"]
+build-backend = "uv_build"
