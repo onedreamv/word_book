@@ -7,7 +7,7 @@ from .merge import app as merge_app
 
 app = typer.Typer()
 
-app.add_typer(init_app, name="init")
-app.add_typer(add_app, name="add")
-app.add_typer(clean_app, name="clean")
-app.add_typer(merge_app, name="merge")
+app.add_typer(init_app)
+app.add_typer(add_app)
+app.add_typer(clean_app)
+app.add_typer(merge_app)
