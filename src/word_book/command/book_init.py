@@ -38,25 +38,67 @@ def get_init_paths(global_config: bool) -> tuple[Path, Path, Path, str]:
     return config_dir, toml_file, env_file, default_main_book_path
 
 
+def _ensure_init_target_is_usable(
+    config_dir: Path,
+    toml_file: Path,
+    env_file: Path,
+    *,
+    scope_label: str,
+    force: bool,
+) -> None:
+    existing_files = [file_path.name for file_path in (toml_file, env_file) if file_path.exists()]
+
+    if not config_dir.exists():
+        return
+
+    if not config_dir.is_dir():
+        abort(f"{scope_label} 配置路径 `{config_dir}` 已存在且不是目录。")
+
+    if existing_files and not force:
+        existing_text = "、".join(f"`{file_name}`" for file_name in existing_files)
+        abort(f"{scope_label} 配置目录 `{config_dir}` 已存在 {existing_text}，请先删除后再初始化。")
+
+
 @app.command()
 def init(
+    project_config: Annotated[
+        bool,
+        typer.Option("--project", help="在当前项目目录创建项目配置。"),
+    ] = False,
     global_config: Annotated[
         bool,
         typer.Option("--global", help="在用户主目录创建全局配置。"),
     ] = False,
+    force: Annotated[
+        bool,
+        typer.Option("--force", help="覆盖已有的 .bookconfig 配置文件。"),
+    ] = False,
 ) -> str | None:
     """初始化项目或全局配置。"""
-    config_dir, toml_file, env_file, default_main_book_path = get_init_paths(global_config)
-    scope_label = "全局" if global_config else "项目"
+    if project_config and global_config:
+        abort("`--project` 和 `--global` 不能同时使用。")
 
-    if config_dir.exists():
-        if not config_dir.is_dir():
-            abort(f"{scope_label} 配置路径 `{config_dir}` 已存在且不是目录。")
-        return f"提示: {scope_label} 配置目录 `{config_dir}` 已经存在，无需初始化。"
+    if global_config:
+        config_dir, toml_file, env_file, default_main_book_path = get_init_paths(True)
+        scope_label = "全局"
+    else:
+        config_dir, toml_file, env_file, default_main_book_path = get_init_paths(False)
+        scope_label = "项目"
+
+    _ensure_init_target_is_usable(
+        config_dir,
+        toml_file,
+        env_file,
+        scope_label=scope_label,
+        force=force,
+    )
 
     try:
         config_dir.mkdir(parents=True, exist_ok=True)
         rich.print(f"已创建{scope_label}配置目录: {config_dir}")
+
+        if force:
+            rich.print(f"提示: {scope_label}配置目录已存在，将覆盖写入配置文件。")
 
         toml_file.write_text(build_default_toml(default_main_book_path), encoding="utf-8")  # pyright: ignore[reportUnusedCallResult]
         rich.print(f"已生成文件: {toml_file.name}")
