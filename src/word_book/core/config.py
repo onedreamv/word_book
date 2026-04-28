@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 from dotenv import dotenv_values
 import tomllib
@@ -106,7 +106,8 @@ def _load_settings(toml_path: Path) -> Settings:
     if not isinstance(settings_obj, dict):
         raise InvalidConfigError(f"配置文件 `{toml_path}` 缺少有效的 `[settings]` 段。")
 
-    raw_main_book_path = settings_obj.get("main_book_path")
+    settings_dict = cast(dict[str, object], settings_obj)
+    raw_main_book_path = settings_dict.get("main_book_path")
     if not isinstance(raw_main_book_path, str) or not raw_main_book_path.strip():
         raise InvalidConfigError(f"配置文件 `{toml_path}` 中的 `settings.main_book_path` 必须是非空字符串。")
 
