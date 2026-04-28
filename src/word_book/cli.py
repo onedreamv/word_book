@@ -1,5 +1,6 @@
 import rich
 import typer
+from typing import Annotated
 
 from .command import app as command_app
 from .core.config import AppConfig, ConfigError, load_app_config
@@ -11,9 +12,25 @@ app: typer.Typer = typer.Typer()
 app.add_typer(command_app, name=None)
 
 
+def version_callback(value: bool) -> None:
+    """显示版本信息并退出。"""
+    if value:
+        from .core.version import APPNAME, VERSION
+
+        rich.print(f"{APPNAME} {VERSION}")
+        raise typer.Exit()
+
+
 @app.callback()
-def main_callback(ctx: typer.Context) -> None:
-    """CLI 主回调：加载配置并确保默认词书存在。"""
+def main_callback(ctx: typer.Context,
+                version: Annotated[bool, typer.Option
+                ("--version", "-v", 
+                help="显示版本信息并退出。", 
+                callback=version_callback, 
+                is_eager=True)] = False
+                  ) -> None:
+    """管理个人词书的 CLI 工具。"""
+    # CLI 主回调：加载配置并确保默认词书存在。
     if ctx.resilient_parsing:
         return
 
