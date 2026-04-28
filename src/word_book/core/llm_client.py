@@ -1,7 +1,10 @@
 from typing import Protocol, Any
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
+from rich.console import Console
 from .exceptions import abort
+
+console = Console(stderr=True)
 
 class LLMClient(Protocol):
     """大语言模型客户端通用接口"""
@@ -19,18 +22,19 @@ class OpenAIClient:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
-        
+
         kwargs: dict[str, Any] = {"model": self.model, "messages": messages} # pyright: ignore[reportExplicitAny]
         if response_format:
             kwargs["response_format"] = response_format
 
         try:
-            response: ChatCompletion = self.client.chat.completions.create(**kwargs)  # pyright: ignore[reportUnknownVariableType,reportAny]
+            with console.status("[bold magenta]正在调用大语言模型...", spinner="hearts"):
+                response: ChatCompletion = self.client.chat.completions.create(**kwargs)  # pyright: ignore[reportUnknownVariableType,reportAny]
             if not isinstance(response, ChatCompletion):
                 abort("大语言模型返回类型异常。")
         except Exception as exc:
             abort(f"调用大语言模型 API 失败: {exc}")
-            
+
         content: str | None = response.choices[0].message.content
         
         if not content:
