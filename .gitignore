@@ -9,8 +9,10 @@ wheels/
 # Virtual environments
 .venv
 
-# vscode
+# ide
 .vscode/
+.codebuddy/
+.trae
 
 # word-book self
 word_book.md
