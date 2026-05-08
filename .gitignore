@@ -18,6 +18,9 @@ wheels/
 word_book.md
 .bookconfig/
 
+# agents
+.agents/
+skills*
 
 # other
 local_tmp_doc/
