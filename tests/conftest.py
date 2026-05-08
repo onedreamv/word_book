@@ -13,7 +13,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from word_book.core.config import AppConfig, Settings
+from word_book.core.config import AppConfig, Settings  # noqa: E402
 
 
 @pytest.fixture
