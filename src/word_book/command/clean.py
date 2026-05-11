@@ -67,7 +67,7 @@ class WordExtractor:
 
     def extract(self, text: str) -> list[str]:
         """对外暴露的提取方法"""
-        user_prompt: str = f"Clean the following text and return a list of words:\n\n{text}"
+        user_prompt: str = f"{text}"
         
         result_str: str = self.llm_client.chat(
             system_prompt=self._build_system_prompt(),
