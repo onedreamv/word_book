@@ -70,11 +70,25 @@ def _ensure_complete_config_dir(config_dir: Path, *, source_label: str) -> tuple
 
     return toml_path, env_path
 
-def discover_config_files(start_dir: Path | None = None) -> tuple[ConfigSource, Path, Path, Path]:
+def discover_config_files(
+    start_dir: Path | None = None,
+    *,
+    home_dir: Path | None = None,
+) -> tuple[ConfigSource, Path, Path, Path]:
     """优先向上递归查找 project config，找不到时回退到 global config。"""
     current_dir = (start_dir or Path.cwd()).resolve()
-     # 优先使用当前目录,递归向上搜索
+    resolved_home_dir = (home_dir or Path.home()).resolve()
+    normalized_home_dir = str(resolved_home_dir).rstrip("\\/").lower()
+    global_config_dir = resolved_home_dir / CONFIG_DIR_NAME
+
+    # 优先使用当前目录，递归向上搜索；家目录中的配置只作为 global 处理。
     for search_dir in (current_dir, *current_dir.parents):
+        normalized_search_dir = str(search_dir.resolve()).rstrip("\\/").lower()
+        if normalized_search_dir == normalized_home_dir:
+            break
+
+
+
         config_dir = search_dir / CONFIG_DIR_NAME
         if not config_dir.exists():
             continue
@@ -82,7 +96,6 @@ def discover_config_files(start_dir: Path | None = None) -> tuple[ConfigSource, 
         toml_path, env_path = _ensure_complete_config_dir(config_dir, source_label="project")
         return "project", config_dir, toml_path, env_path
 
-    global_config_dir = Path.home() / CONFIG_DIR_NAME
     if global_config_dir.exists():
         toml_path, env_path = _ensure_complete_config_dir(global_config_dir, source_label="global")
         return "global", global_config_dir, toml_path, env_path
@@ -90,6 +103,8 @@ def discover_config_files(start_dir: Path | None = None) -> tuple[ConfigSource, 
     raise NotFoundConfigDirError(
         "未找到可用配置。请运行 `word_book init` 创建 project 配置，或运行 `word_book init --global` 创建全局配置。"
     )
+
+
 
 
 def _load_settings(toml_path: Path) -> Settings:
@@ -123,22 +138,21 @@ def _load_env_config(env_path: Path) -> dict[str, str | None]:
 
 
 def _resolve_main_book_path(*, settings: Settings, config_dir: Path, config_source: ConfigSource) -> tuple[Path, Path]:
-    """解析主词书路径,区分项目和全局配置.检查工作目录是否存在,返回工作目录和主词书路径。"""
+    """解析主词书路径，检查默认词书目录并返回工作目录与主词书路径。"""
     raw_main_book_path = Path(settings.main_book_path)
 
-
     if config_source == "project":
-        working_dir = config_dir.parent.resolve()
-        main_book_path = raw_main_book_path if raw_main_book_path.is_absolute() else working_dir / raw_main_book_path
+        project_root = config_dir.parent.resolve()
+        main_book_path = raw_main_book_path if raw_main_book_path.is_absolute() else project_root / raw_main_book_path
     else:
         if not raw_main_book_path.is_absolute():
             raise InvalidConfigError(
                 "global 配置中的 `main_book_path` 必须是绝对路径。请修改配置后重试，或运行 `word_book init --global` 重新初始化。"
             )
         main_book_path = raw_main_book_path
-        working_dir = main_book_path.parent.resolve()
 
     resolved_main_book_path = main_book_path.resolve(strict=False)
+    working_dir = resolved_main_book_path.parent.resolve()
 
     if not working_dir.exists():
         raise InvalidConfigError(
@@ -150,6 +164,7 @@ def _resolve_main_book_path(*, settings: Settings, config_dir: Path, config_sour
         raise InvalidConfigError(f"默认词书路径 `{resolved_main_book_path}` 不是文件。")
 
     return working_dir, resolved_main_book_path
+
 
 
 def load_app_config(start_dir: Path | None = None) -> AppConfig:
