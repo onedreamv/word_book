@@ -4,9 +4,11 @@ from typing import Annotated, cast
 import rich
 import typer
 
+from ..core.book_discovery import ensure_book_file, discover_book_path
 from ..core.config import AppConfig
 from ..core.exceptions import abort
 from ..core.output_writer import append_lines_to_file
+
 
 app = typer.Typer()
 
@@ -18,18 +20,13 @@ def merge(
     main_book_path: Annotated[Path | None, typer.Option("--file", "-f", help="主词书路径")] = None,
 ) -> None:
     """合并其他词书到主词书"""
+    config: AppConfig = cast(AppConfig, ctx.obj)
     if main_book_path is None:
-        config: AppConfig = cast(AppConfig, ctx.obj)
-        main_book_path = config.main_book_path
-
-    if not main_book_path.exists():
-        abort(f"主词书 `{main_book_path}` 不存在。")
-    if not main_book_path.is_file():
-        abort(f"主词书路径 `{main_book_path}` 不是文件。")
-    if not other_book_path.exists():
-        abort(f"待合并词书 `{other_book_path}` 不存在。")
-    if not other_book_path.is_file():
-        abort(f"待合并词书路径 `{other_book_path}` 不是文件。")
+        main_book_path = ensure_book_file(config.main_book_path, label="主词书")
+    else:
+        main_book_path = discover_book_path(main_book_path, config)
+    
+    other_book_path = discover_book_path(other_book_path, config)
 
     try:
         with main_book_path.open("r", encoding="utf-8") as file:
@@ -42,7 +39,7 @@ def merge(
     new_words: set[str] = other_words - existing
 
     if new_words:
-        append_lines_to_file(new_words, main_book_path)
+        _ = append_lines_to_file(new_words, main_book_path)
         rich.print(f"已合并 {len(new_words)} 个新单词.")
         return
 
