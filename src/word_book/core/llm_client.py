@@ -26,6 +26,7 @@ class OpenAIClient:
         kwargs: dict[str, Any] = {"model": self.model, "messages": messages} # pyright: ignore[reportExplicitAny]
         if response_format:
             kwargs["response_format"] = response_format
+        kwargs["extra_body"] = {"thinking": {"type": "enabled"}}
 
         try:
             with console.status("[bold magenta]正在调用大语言模型...", spinner="hearts"):
