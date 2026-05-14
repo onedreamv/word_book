@@ -100,7 +100,7 @@ def test_clean_writes_extracted_words_without_external_services(
         def __init__(self, api_key: str, base_url: str, model: str):
             captured_init.update({"api_key": api_key, "base_url": base_url, "model": model})
 
-        def chat(self, _system_prompt: str, user_prompt: str, response_format: dict[str, object] | None = None) -> str:
+        def chat(self, system_prompt: str, user_prompt: str, response_format: dict[str, object] | None = None) -> str:
             assert "raw input" in user_prompt
             assert response_format == {"type": "json_object"}
             return '{"words": ["alpha", "beta"]}'
@@ -132,10 +132,10 @@ def test_clean_uses_unique_output_path(monkeypatch: pytest.MonkeyPatch, make_ctx
     _ = (tmp_path / "cleaned.txt").write_text("existing\n", encoding="utf-8")
 
     class FakeOpenAIClient:
-        def __init__(self, _api_key: str, _base_url: str, _model: str):
+        def __init__(self, api_key: str, base_url: str, model: str):
             pass
 
-        def chat(self, _system_prompt: str, _user_prompt: str, _response_format: dict[str, object] | None = None) -> str:
+        def chat(self, system_prompt: str, user_prompt: str, response_format: dict[str, object] | None = None) -> str:
             return '{"words": ["gamma"]}'
 
     def fake_resolve_input_text(**_kwargs: object) -> str:
