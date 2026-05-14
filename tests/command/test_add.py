@@ -53,8 +53,27 @@ def test_add_uses_default_book_from_context(
     assert book_path.read_text(encoding="utf-8") == "contextual\n"
 
 
+def test_add_file_falls_back_to_config_working_dir(
+    make_ctx: Callable[..., typer.Context],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    current_dir = tmp_path / "current"
+    working_dir = tmp_path / "working"
+    current_dir.mkdir()
+    working_dir.mkdir()
+    book_path = working_dir / "buffer.txt"
+    _ = book_path.write_text("apple\n", encoding="utf-8")
+    monkeypatch.chdir(current_dir)
+
+    add(make_ctx(working_dir=working_dir), "banana", book_path=Path("buffer.txt"))
+
+    assert book_path.read_text(encoding="utf-8") == "apple\nbanana\n"
+
+
 def test_add_rejects_missing_book(tmp_path: Path) -> None:
     with pytest.raises(typer.Exit) as exc_info:
+
         add(make_typing_ctx(), "banana", book_path=tmp_path / "missing.md")
 
     assert exc_info.value.exit_code == 1

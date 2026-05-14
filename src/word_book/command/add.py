@@ -4,9 +4,11 @@ from typing import Annotated, cast
 import rich
 import typer
 
+from ..core.book_discovery import ensure_book_file, discover_book_path
 from ..core.config import AppConfig
 from ..core.exceptions import abort
 from ..core.output_writer import append_lines_to_file
+
 
 app = typer.Typer()
 
@@ -27,14 +29,11 @@ def add(
     ] = None,
 ) -> None:
     """添加单词到词书"""
+    config: AppConfig = cast(AppConfig, ctx.obj)
     if book_path is None:
-        config: AppConfig = cast(AppConfig, ctx.obj)
-        book_path = config.main_book_path
-
-    if not book_path.exists():
-        abort(f"词书 `{book_path}` 不存在。")
-    if not book_path.is_file():
-        abort(f"词书路径 `{book_path}` 不是文件。")
+        book_path = ensure_book_file(config.main_book_path, label="词书")
+    else:
+        book_path = discover_book_path(book_path, config)
 
     try:
         with book_path.open("r", encoding="utf-8") as file:
@@ -46,6 +45,6 @@ def add(
         rich.print(f"[yellow]{word}[/yellow] 已经在词书里了.")
         return
 
-    append_lines_to_file([word], book_path)
+    _ = append_lines_to_file([word], book_path)
 
     rich.print(f"[green]{word}[/green] 已经添加到词书里了.")

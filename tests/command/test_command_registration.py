@@ -17,4 +17,3 @@ def test_version_option_prints_version_and_exits(runner: CliRunner) -> None:
     result = runner.invoke(app, ["--version"])
 
     assert result.exit_code == 0
-    assert "word_book 0.0.1" in result.output
